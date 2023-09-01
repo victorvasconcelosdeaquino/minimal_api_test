@@ -16,7 +16,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
-app.MapGet("/", () => "Product Catalog");
+app.MapGet("/", () => "Product Catalog").ExcludeFromDescription();
 
 app.MapPost("/categories", async (Category category, AppDbContext context) =>
 {
@@ -30,8 +30,35 @@ app.MapGet("/categories", async (AppDbContext context) => await context.Categori
 
 app.MapGet("/categories/{id:int}", async (int id, AppDbContext context) =>
 {
-    return await context.Categories.FindAsync(id) 
+    return await context.Categories.FindAsync(id)
         is Category category ? Results.Ok(category) : Results.NotFound();
+});
+
+app.MapPut("/categories/{id:int}", async (int id, Category category, AppDbContext context) =>
+{
+    if (category.Id != id) return Results.BadRequest();
+
+    var cat = await context.Categories.FindAsync(id);
+
+    if (cat is null) return Results.NotFound();
+
+    cat.Name = category.Name;
+    cat.Description = category.Description;
+    await context.SaveChangesAsync();
+
+    return Results.Ok(cat);
+});
+
+app.MapPut("/categories/{id:int}", async (int id, AppDbContext context) =>
+{
+    var cat = await context.Categories.FindAsync(id);
+
+    if (cat is null) return Results.NotFound();
+
+    context.Remove(cat);
+    await context.SaveChangesAsync();
+
+    return Results.NoContent();
 });
 
 // Configure the HTTP request pipeline.
