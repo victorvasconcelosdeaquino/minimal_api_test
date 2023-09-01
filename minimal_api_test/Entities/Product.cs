@@ -1,4 +1,6 @@
-﻿namespace minimal_api_test.Entities;
+﻿using System.Text.Json.Serialization;
+
+namespace minimal_api_test.Entities;
 
 public class Product
 {
@@ -8,5 +10,6 @@ public class Product
     public decimal Price { get; set; }
     
     public int CategoryId { get; set; }
+    [JsonIgnore]
     public Category? Category { get; set; }
 }
